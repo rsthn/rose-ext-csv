@@ -45,6 +45,7 @@ class CsvUtils
 	public static function clear ()
 	{
 		self::$csvData = '';
+		self::$csvHeader = '';
 	}
 
 	/**
@@ -66,7 +67,7 @@ class CsvUtils
 	public static function row ($array, $header=null, $isHeader=false)
 	{
 		if (self::$csvData === null)
-			self::reset();
+			self::$csvData = '';
 
 		$data = array();
 
@@ -637,9 +638,9 @@ Expr::register('csv::read', function($args, $parts, $data)
  */
 Expr::register('csv::header', function($args, $parts, $data)
 {
+	CsvUtils::clear();
 	CsvUtils::$csvHeader = $args->get(1);
 
-	CsvUtils::start();
 	CsvUtils::row (CsvUtils::$csvHeader, null, true);
 });
 
@@ -678,7 +679,7 @@ Expr::register('csv::dump', function($args, $parts, $data)
 	header("Content-Type: text/csv");
 	header("Content-Disposition: ".($args->has(2) ? $args->get(2) : 'inline')."; filename=\"".$args->get(1)."\"");
 
-	echo (CsvUtils::$csvData);
+	echo (b"\xEF\xBB\xBF" . CsvUtils::$csvData);
 	CsvUtils::$csvData = null;
 
 	exit();
