@@ -101,7 +101,7 @@ class CsvUtils
 			if ($ch === false)
 				return $str == '' ? false : $str;
 
-			if ($state == 0 && $ch == "\n")
+			if (($state == 0 || $state == 2) && $ch == "\n")
 				break;
 
 			switch ($state)
