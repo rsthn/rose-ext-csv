@@ -23,6 +23,7 @@ use Rose\Expr;
 use Rose\Resources;
 use Rose\Map;
 use Rose\Arry;
+use Rose\Text;
 
 /**
  * Helper class.
@@ -75,7 +76,7 @@ class CsvUtils
 
 		foreach ($array->__nativeArray as $item)
 		{
-			$item = trim($item);
+			$item = Text::trim($item);
 
 			if ($isHeader && $item[0] == '=')
 				$item = substr($item, 1);
@@ -101,7 +102,7 @@ class CsvUtils
 			if ($ch === false)
 				return $str == '' ? false : $str;
 
-			if (($state == 0 || $state == 2) && $ch == "\n")
+			if ($state == 0 && $ch == "\n")
 				break;
 
 			switch ($state)
@@ -135,7 +136,7 @@ class CsvUtils
 		$i = 0; $st = 0; $state = 0; $count = 0;
 		$stack = array();
 
-		$str = str_replace("\r", '', trim($str)) . "\n";
+		$str = str_replace("\r", '', Text::trim($str)) . "\n";
 		$str_length = strlen($str);
 
 		for ($i = 0; $i < $str_length; $i++)
@@ -151,7 +152,7 @@ class CsvUtils
 
 					if ($str[$i] == $delim || $str[$i] == "\n")
 					{
-						$stack[$count++] = trim(substr($str, $st, $i - $st));
+						$stack[$count++] = Text::trim(substr($str, $st, $i - $st));
 						$state = 0;
 					}
 
@@ -168,7 +169,7 @@ class CsvUtils
 						break;
 					}
 
-					$stack[$count++] = trim(substr($str, $st, $i - $st));
+					$stack[$count++] = Text::trim(substr($str, $st, $i - $st));
 					$state = 4; $i--;
 
 					break;
@@ -176,7 +177,7 @@ class CsvUtils
 				case 3:
 					if ($str[$i] == $delim || $str[$i] == "\n")
 					{
-						$stack[$count++] = trim(substr($str, $st, $i - $st));
+						$stack[$count++] = Text::trim(substr($str, $st, $i - $st));
 						$state = $str[$i] == $delim ? 5 : 0;
 					}
 
@@ -422,10 +423,10 @@ class CsvUtils
 				break;
 			}
 
-			$line = trim($line);
+			$line = Text::trim($line);
 			if (!$line) continue;
 
-			$tmp = trim(str_replace($delim, '', $line));
+			$tmp = Text::trim(str_replace($delim, '', $line));
 			if (!strlen($tmp)) continue;
 
 			if ($row_number == 0)
@@ -549,10 +550,10 @@ class CsvUtils
 				break;
 			}
 
-			$line = trim($line);
+			$line = Text::trim($line);
 			if (!$line) continue;
 
-			$tmp = trim(str_replace($delim, '', $line));
+			$tmp = Text::trim(str_replace($delim, '', $line));
 			if (!strlen($tmp)) continue;
 
 			if ($row_number == 0)
