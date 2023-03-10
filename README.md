@@ -12,6 +12,7 @@ composer require rsthn/rose-ext-csv
 
 ### `csv::clear`
 ### `csv::header` columNames:Arry
+### `csv::rowCount`
 ### `csv::row` values:Map|Arry
 ### `csv::rows` rows:Arry<Arry|Map>
 ### `csv::data` [clear:boolean]
