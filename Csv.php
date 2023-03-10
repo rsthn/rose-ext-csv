@@ -41,12 +41,18 @@ class CsvUtils
 	public static $csvHeader = null;
 
 	/**
+	 * Number of rows added.
+	 */
+	public static $csvRowCount = 0;
+
+	/**
 	 * Clears the current CSV buffer.
 	 */
 	public static function clear ()
 	{
 		self::$csvData = '';
 		self::$csvHeader = '';
+		self::$csvRowCount = 0;
 	}
 
 	/**
@@ -85,6 +91,7 @@ class CsvUtils
 		}
 
 		self::$csvData .= implode(',', $data) . "\r\n";
+		self::$csvRowCount++;
 	}
 
 	/**
@@ -635,13 +642,28 @@ Expr::register('csv::read', function($args, $parts, $data)
 });
 
 /**
+ * csv::clear
+ */
+Expr::register('csv::clear', function($args, $parts, $data)
+{
+	CsvUtils::clear();
+});
+
+/**
+ * csv::rowCount
+ */
+Expr::register('csv::rowCount', function($args, $parts, $data)
+{
+	return CsvUtils::$rowCount;
+});
+
+/**
  * csv::header columNames:Arry
  */
 Expr::register('csv::header', function($args, $parts, $data)
 {
 	CsvUtils::clear();
 	CsvUtils::$csvHeader = $args->get(1);
-
 	CsvUtils::row (CsvUtils::$csvHeader, null, true);
 });
 
@@ -665,11 +687,15 @@ Expr::register('csv::rows', function($args, $parts, $data)
 });
 
 /**
- * csv::data
+ * csv::data [clear:boolean]
  */
 Expr::register('csv::data', function($args, $parts, $data)
 {
-	return CsvUtils::$csvData;
+	$data = CsvUtils::$csvData;
+	if ($args->has(1) && \bool($args->get(1)))
+		CsvUtils::clear();
+
+	return $data;
 });
 
 /**
