@@ -82,7 +82,7 @@ class CsvUtils
 
 		foreach ($array->__nativeArray as $item)
 		{
-			$item = Text::trim($item);
+			$item = Text::trim((string)$item);
 
 			if ($isHeader && $item[0] == '=')
 				$item = substr($item, 1);
@@ -654,7 +654,7 @@ Expr::register('csv::clear', function($args, $parts, $data)
  */
 Expr::register('csv::rowCount', function($args, $parts, $data)
 {
-	return CsvUtils::$rowCount;
+	return CsvUtils::$csvRowCount;
 });
 
 /**
@@ -692,7 +692,7 @@ Expr::register('csv::rows', function($args, $parts, $data)
 Expr::register('csv::data', function($args, $parts, $data)
 {
 	$data = CsvUtils::$csvData;
-	if ($args->has(1) && \bool($args->get(1)))
+	if ($args->has(1) && $args->get(1) === true)
 		CsvUtils::clear();
 
 	return $data;
