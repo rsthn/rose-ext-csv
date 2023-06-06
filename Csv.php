@@ -46,13 +46,25 @@ class CsvUtils
 	public static $csvRowCount = 0;
 
 	/**
+	 * Separator.
+	 */
+	public static $csvSeparator = ',';
+
+	/**
+	 * Indicates if escaping of values is enabled.
+	 */
+	public static $csvEscape = true;
+
+	/**
 	 * Clears the current CSV buffer.
 	 */
 	public static function clear ()
 	{
 		self::$csvData = '';
-		self::$csvHeader = '';
+		self::$csvHeader = null;
 		self::$csvRowCount = 0;
+		self::$csvSeparator = ',';
+		self::$csvEscape = true;
 	}
 
 	/**
@@ -60,6 +72,9 @@ class CsvUtils
 	 */
 	public static function escape ($value, $header=null)
 	{
+		if (!self::$csvEscape)
+			return $value;
+
 		$prefix = '';
 
 		if ($header && $header[0] === '=')
@@ -90,7 +105,7 @@ class CsvUtils
 			$data[] = self::escape($item, $header ? $header->get($i++) : null);
 		}
 
-		self::$csvData .= implode(',', $data) . "\r\n";
+		self::$csvData .= implode(self::$csvSeparator, $data) . "\r\n";
 		self::$csvRowCount++;
 	}
 
@@ -647,6 +662,22 @@ Expr::register('csv::read', function($args, $parts, $data)
 Expr::register('csv::clear', function($args, $parts, $data)
 {
 	CsvUtils::clear();
+});
+
+/**
+ * csv::separator
+ */
+Expr::register('csv::separator', function($args, $parts, $data)
+{
+	CsvUtils::$csvSeparator = $args->get(1);
+});
+
+/**
+ * csv::escape
+ */
+Expr::register('csv::escape', function($args, $parts, $data)
+{
+	CsvUtils::$csvEscape = \Rose\bool($args->get(1));
 });
 
 /**

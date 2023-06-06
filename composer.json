@@ -1,7 +1,7 @@
 {
     "name": "rsthn/rose-ext-csv",
     "description": "CSV Utilities for Rose",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "type": "rose-extension",
     "license": "Apache-2.0",
     "authors": [
