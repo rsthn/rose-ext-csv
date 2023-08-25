@@ -99,7 +99,7 @@ class CsvUtils
 		{
 			$item = Text::trim((string)$item);
 
-			if ($isHeader && $item[0] == '=')
+			if ($isHeader && $item !== '' && $item[0] == '=')
 				$item = substr($item, 1);
 
 			$data[] = self::escape($item, $header ? $header->get($i++) : null);
