@@ -43,10 +43,10 @@ class CsvUtils
     /**
      * Clears the current CSV buffer.
      */
-    public static function clear ($autoHeader=false)
+    public static function clear ()
     {
         self::$csvData = '';
-        self::$csvHeader = $autoHeader ? true : null;
+        self::$csvHeader = null;
         self::$csvRowCount = 0;
         self::$csvSeparator = ',';
         self::$csvEscape = true;
@@ -631,35 +631,40 @@ Expr::register('csv::loadTemp', function($args, $parts, $data)
 /**
  * csv::read filename:string
  */
-Expr::register('csv::read', function($args, $parts, $data) {
+Expr::register('csv::read', function($args, $parts, $data)
+{
     return CsvUtils::readCsv ($args->get(1));
 });
 
 /**
- * csv::clear [autoHeader:bool=false]
+ * csv::clear
  */
-Expr::register('csv::clear', function($args, $parts, $data) {
-    CsvUtils::clear($args->has(1) ? \Rose\bool($args->get(1)) : false);
+Expr::register('csv::clear', function($args, $parts, $data)
+{
+    CsvUtils::clear();
 });
 
 /**
  * csv::separator
  */
-Expr::register('csv::separator', function($args, $parts, $data) {
+Expr::register('csv::separator', function($args, $parts, $data)
+{
     CsvUtils::$csvSeparator = $args->get(1);
 });
 
 /**
  * csv::escape
  */
-Expr::register('csv::escape', function($args, $parts, $data) {
+Expr::register('csv::escape', function($args, $parts, $data)
+{
     CsvUtils::$csvEscape = \Rose\bool($args->get(1));
 });
 
 /**
  * csv::rowCount
  */
-Expr::register('csv::rowCount', function($args, $parts, $data) {
+Expr::register('csv::rowCount', function($args, $parts, $data)
+{
     return CsvUtils::$csvRowCount;
 });
 
@@ -668,9 +673,9 @@ Expr::register('csv::rowCount', function($args, $parts, $data) {
  */
 Expr::register('csv::header', function($args, $parts, $data)
 {
-    CsvUtils::clear(false);
+    CsvUtils::clear();
     CsvUtils::$csvHeader = $args->get(1);
-    CsvUtils::row(CsvUtils::$csvHeader, null, true);
+    CsvUtils::row (CsvUtils::$csvHeader, null, true);
 });
 
 /**
@@ -678,11 +683,6 @@ Expr::register('csv::header', function($args, $parts, $data)
  */
 Expr::register('csv::row', function($args, $parts, $data)
 {
-    if (CsvUtils::$csvHeader === true) {
-        CsvUtils::$csvHeader = $args->get(1)->keys();
-        CsvUtils::row(CsvUtils::$csvHeader, null, true);
-    }
-
     CsvUtils::row ($args->get(1), CsvUtils::$csvHeader);
 });
 
@@ -691,15 +691,8 @@ Expr::register('csv::row', function($args, $parts, $data)
  */
 Expr::register('csv::rows', function($args, $parts, $data)
 {
-    $list = $args->get(1);
-    if (!$list->length) return;
-
-    if (CsvUtils::$csvHeader === true) {
-        CsvUtils::$csvHeader = $list->at(0)->keys();
-        CsvUtils::row(CsvUtils::$csvHeader, null, true);
-    }
-
-    $list->forEach(function ($row) {
+    $args->get(1)->forEach(function ($row)
+    {
         CsvUtils::row ($row, CsvUtils::$csvHeader);
     });
 });
@@ -728,13 +721,4 @@ Expr::register('csv::dump', function($args, $parts, $data)
     CsvUtils::$csvData = null;
 
     exit();
-});
-
-/**
- * csv::write filename:string
- */
-Expr::register('csv::write', function($args, $parts, $data)
-{
-    file_put_contents($args->get(1), b"\xEF\xBB\xBF" . CsvUtils::$csvData);
-    CsvUtils::$csvData = null;
 });
