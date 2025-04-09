@@ -244,8 +244,12 @@ class CsvUtils
      * 		:clean					varchar(4096)
      * 		<default>				varchar(256)
      */
-    public static function parseColumn ($name)
+    public static function parseColumn ($name, $detect_type)
     {
+        if (!$detect_type) {
+            return array('name' => $name, 'stype' => 'string', 'type' => 'varchar(256)');
+        }
+
         $name = explode(':', $name);
         if (count($name) < 2) $name = array($name[0], 'string');
 
@@ -458,7 +462,7 @@ class CsvUtils
 
                 foreach ($fields as $col)
                 {
-                    $rfield = self::parseColumn ($col);
+                    $rfield = self::parseColumn ($col, true);
 
                     if ($rfield['name'][0] == '-')
                         $rfield['name'] = '';
@@ -580,12 +584,11 @@ class CsvUtils
 
                 $rfields = array();
                 foreach ($fields as $col) {
-                    $rfield = self::parseColumn($col);
+                    $rfield = self::parseColumn($col, false);
                     if ($rfield['name'] && $rfield['name'][0] == '-')
                         $rfield['name'] = '';
                     $rfields[] = $rfield;
                 }
-
                 continue;
             }
 
