@@ -10,6 +10,8 @@ use Rose\Map;
 use Rose\Arry;
 use Rose\Text;
 
+// @title Csv
+
 /**
  * Helper class.
  */
@@ -627,69 +629,88 @@ class CsvUtils
  * Expression functions.
  */
 
- /**
-  * csv:load filename:string tableName:string [extraFields:Map]
-  */
-Expr::register('csv:load', function($args, $parts, $data)
-{
+/**
+ * Loads a CSV file into a table. Each column can optionally have a type which will be mapped to a
+ * SQL type. The suffix can be one of the following:
+ * | Suffix | SQL Type |
+ * | ------ | -------- |
+ * | :date | DATE |
+ * | :date:d/m/y | DATE |
+ * | :int | INT(10) |
+ * | :primary | INT(10) PRIMARY KEY AUTO_INCREMENT |
+ * | :numeric | DECIMAL(12,2) |
+ * | :text | VARCHAR(4096) |
+ * | :clean | VARCHAR(4096) |
+ * | <default> | VARCHAR(256) |
+ *
+ * @code (`csv:load` filename:str table_name:str extra_fields:dict?)
+ */
+Expr::register('csv:load', function($args, $parts, $data) {
     CsvUtils::loadCsv ($args->get(1), $args->get(2), false, 'all', $args->length > 3 ? $args->get(3) : null);
 });
 
- /**
-  * csv:loadTemp filename:string tableName:string [extraFields:Map]
-  */
-Expr::register('csv:loadTemp', function($args, $parts, $data)
-{
+/**
+ * Loads a CSV file into a temporary table. Each column can optionally have a type which will be
+ * mapped to a SQL type. See: `csv:load` for more information.
+ * @code (`csv:load-temp` filename:str table_name:str extra_fields:dict?)
+ */
+Expr::register('csv:load-temp', function($args, $parts, $data) {
     CsvUtils::loadCsv ($args->get(1), $args->get(2), true, 'all', $args->length > 3 ? $args->get(3) : null);
 });
 
 /**
- * csv:read filename:string [header:array]
+ * Reads a CSV file into memory.
+ * @code (`csv:read` filename:str header:list?)
  */
 Expr::register('csv:read', function($args, $parts, $data) {
     return CsvUtils::readCsv($args->get(1), $args->{2});
 });
 
 /**
- * csv:clear [autoHeader:bool=false]
+ * Clears the output CSV buffer.
+ * @code (`csv:clear` auto_header:bool=false)
  */
 Expr::register('csv:clear', function($args, $parts, $data) {
     CsvUtils::clear($args->has(1) ? \Rose\bool($args->get(1)) : false);
 });
 
 /**
- * csv:separator
+ * Specifies the column separator character.
+ * @code (`csv:separator` separator:str)
  */
 Expr::register('csv:separator', function($args, $parts, $data) {
     CsvUtils::$csvSeparator = $args->get(1);
 });
 
 /**
- * csv:escape
+ * Indicates whether or not to escape the CSV values in the output.
+ * @code (`csv:escape` escape:bool)
  */
 Expr::register('csv:escape', function($args, $parts, $data) {
     CsvUtils::$csvEscape = \Rose\bool($args->get(1));
 });
 
 /**
- * csv:rowCount
+ * Number of rows in the output CSV.
+ * @code (`csv:row-count`)
  */
-Expr::register('csv:rowCount', function($args, $parts, $data) {
+Expr::register('csv:row-count', function($args, $parts, $data) {
     return CsvUtils::$csvRowCount;
 });
 
 /**
- * csv:header columNames:Arry
+ * Specifies the column headers for the output CSV.
+ * @code (`csv:header` column_names:list<str>)
  */
-Expr::register('csv:header', function($args, $parts, $data)
-{
+Expr::register('csv:header', function($args, $parts, $data) {
     CsvUtils::clear(false);
     CsvUtils::$csvHeader = $args->get(1);
     CsvUtils::row(CsvUtils::$csvHeader, null, true);
 });
 
 /**
- * csv:row values:Map|Arry
+ * Adds a row of data to the output CSV.
+ * @code (`csv:row` values:oneOf<dict, list>)
  */
 Expr::register('csv:row', function($args, $parts, $data)
 {
@@ -702,7 +723,8 @@ Expr::register('csv:row', function($args, $parts, $data)
 });
 
 /**
- * csv:rows rows:Arry<Arry|Map>
+ * Adds multiple rows of data to the output CSV.
+ * @code (`csv:rows` rows:list<oneOf<dict, list>>))
  */
 Expr::register('csv:rows', function($args, $parts, $data)
 {
@@ -720,36 +742,33 @@ Expr::register('csv:rows', function($args, $parts, $data)
 });
 
 /**
- * csv:data [clear:boolean]
+ * Returns the output CSV buffer.
+ * @code (`csv:data` clear_after_read:bool=false)
  */
-Expr::register('csv:data', function($args, $parts, $data)
-{
+Expr::register('csv:data', function($args, $parts, $data) {
     $data = CsvUtils::$csvData;
-    if ($args->has(1) && $args->get(1) === true)
+    if ($args->{1} === true)
         CsvUtils::clear();
-
     return $data;
 });
 
 /**
- * csv:dump filename:string [disposition:string]
+ * Dumps the output CSV buffer to the browser.
+ * @code (`csv:dump` filename:str disposition:str?)
  */
-Expr::register('csv:dump', function($args, $parts, $data)
-{
+Expr::register('csv:dump', function($args, $parts, $data) {
     header("Content-Type: text/csv");
-    header("Content-Disposition: ".($args->has(2) ? $args->get(2) : 'inline')."; filename=\"".$args->get(1)."\"");
-
+    header("Content-Disposition: ".($args->{2} ?? 'inline')."; filename=\"".$args->get(1)."\"");
     echo (b"\xEF\xBB\xBF" . CsvUtils::$csvData);
     CsvUtils::$csvData = null;
-
     exit();
 });
 
 /**
- * csv:write filename:string [bom:bool=true]
+ * Writes the output CSV buffer to a file.
+ * @code (`csv:write` filename:str BOM:bool=true)
  */
-Expr::register('csv:write', function($args, $parts, $data)
-{
+Expr::register('csv:write', function($args, $parts, $data) {
     file_put_contents($args->get(1), ($args->{2} !== false ? b"\xEF\xBB\xBF" : '') . CsvUtils::$csvData);
     CsvUtils::$csvData = null;
 });
